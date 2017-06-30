@@ -3,6 +3,7 @@ package scanner;
 import java.util.*;
 import java.io.*;
 import symbol.*;
+import symbol.Symbol.SymbolType;
 import DFA.*;
 import Earley.Earley;
 import Node.Node;
@@ -11,7 +12,7 @@ import SymbolTable.SymbolTable;
 public class Scanner
 {
 	public ArrayList<DFAnode> recognizers = new ArrayList<>();
-	static PrintWriter  out;
+	static PrintWriter out;
 	String lexicalInputFilename;
 	PushbackInputStream dataFile;
 	SymbolTable nst = new SymbolTable("nonTerminal");
@@ -25,10 +26,11 @@ public class Scanner
 		dataFile = data;
 	}
 	
+	/*
 	public Symbol getSymbol(int index, char c){
 		return tst.getSymbol(index, c);
 	}
-
+*/
 	public void build(){
 		
 		Symbol S = nst.add('S');  //0
@@ -108,12 +110,12 @@ public class Scanner
 			y.token += line.charAt(0);
 			line = line.substring(1);
 		}
-		y.category = "terminal";
+		y.symbolType = SymbolType.terminal;
 		
-		y.number = 0;
+		y.symbolIndex = 0;
 		for(Symbol s : tst.rows){
 			if(y.token.equals(s.token)){
-				y.number = s.number;
+				y.symbolIndex = s.symbolIndex;
 				break;
 			}
 		}

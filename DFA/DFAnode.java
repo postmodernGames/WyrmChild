@@ -11,67 +11,51 @@ import java.io.*;
 import Node.*;
 import symbol.Symbol;
 
-class Vertex extends Node{
-	static int i=0;
-	int id;
-	//Vertex parent;  
-    ArrayList<Edge> edges;
-    boolean accept;
-    
-    Vertex(){
-        	edges = new ArrayList<Edge>();
-        	id = i;
-        	i++;
-        	accept = false;
-    }
-    Vertex(Node v){
-    	symbol = v.symbol;
-       	edges = new ArrayList<Edge>();
-       	id = i;
-    	i++;
-    	accept = false;
-    }
+class Graph{
+	
+	ArrayList<Node> nodes;
+	ArrayList<Edge> edges;
+	ArrayList<Boolean> accept;
 
-    void join(Vertex child, String s, boolean sign){
-    	Edge e = new Edge(child,s,sign);
-    	edges.add(e);
-//    	child.parent = this;
+    public Graph(){
+        nodes = new ArrayList<Node>();	
+    	edges = new ArrayList<Edge>();
+        accept = new ArrayList<Boolean>();	
     }
-    public void detach(Vertex v){
-		for(Edge e : edges){
-			if(e.vertex == v){
-				edges.remove(e);
-				break;
-			}
-		}
-	}
+    
+    public void detach(Edge e){
+ 		edges.remove(e);
+ 	}
+    
+   
 }
 
-class NFA{
-	Vertex start;
-	Vertex end;
+class Bubble{
+	Node start;
+	Node end;
 	Node node;
-	NFA(Node n){
+	Bubble(Node n){
 		this.node  = n;
-		start = new Vertex();
-		end = new Vertex();
+		start = new Node();
+		end = new Node();
 	}
-	void join(Vertex child, String s, boolean sign){
+	void join(Node child, String s, boolean sign){
 		end.join(child,s,sign);
 	}
 }
 
 class Edge{
-	Vertex vertex;
+	Node from;
+	Node to;
 	String label;
 	boolean positive;
-	Edge(Vertex child, String s){
-		vertex = child;
+	Edge(Node from, Node to, String s){
+		this.to = to;
 		label = s;
 		positive = true;
 	}
-	Edge(Vertex child, String s,boolean sign){
-		vertex = child;
+	Edge(Node to, String s,boolean sign){
+		this.to = to;
 		label = s;
 		positive = sign;
 	}
@@ -90,7 +74,7 @@ public class DFAnode extends Vertex{
 		Vertex start = new Vertex();//Vertex start = new Vertex();
 		Vertex accept = new Vertex();
 		accept.accept= true;
-		NFA v = new NFA(root);  //v.node âž� root
+		NFA v = new NFA(root);  //v.node --> root
 		start.join(v.start, "",true);  //Edge(v.start,É›) âˆˆ start.edges âˆ§  start = v.parent
 		v.end.join(accept, "",true); //Edge(accept,É›) âˆˆ v.edges âˆ§  v = accept.parent
 	
@@ -154,9 +138,13 @@ public class DFAnode extends Vertex{
 			}
 		}
 	}
-	
+
+	/*
+	* asserts this node's symbol and its children's symbol refer to the rule
+	 */
 	public static boolean checkProduction(NFA v, ArrayList<Symbol> rule){
 		if(!v.node.symbol.equals(rule.get(0))) return false;
+		//replace below with rule.RHS == v.node.children
 		if(v.node.children.size()!=rule.size()-1) return false;
 		for(int j=0; j < v.node.children.size();j++){
 			if(v.node.children.get(j).symbol.equals(rule.get(j+1))==false) return false;
@@ -178,8 +166,8 @@ public class DFAnode extends Vertex{
 	
 	public static void Thompson(NFA v, ArrayList<ArrayList<Symbol>> Grammar, int level){
 		outer:
-		for(int index=0; index< Grammar.size(); index++){
-			if(checkProduction(v,Grammar.get(index)) ){
+		for(int index=0; index< Grammar.size(); index++){   //for each Grammar rule
+			if(checkProduction(v,Grammar.get(index)) ){  //the node and its children represent rule index
 				switch(index){
 				case 0:   //S->R
 					printLevel(level,index,v);

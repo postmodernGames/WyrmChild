@@ -2,11 +2,14 @@ package Node;
 
 import java.util.ArrayList;
 
+import DFA.Edge;
+import DFA.Vertex;
 import Earley.*;
 import State.State;
 import symbol.Symbol;
 
 public class Node{
+	int id;
 	public Symbol symbol;
 	public ArrayList<Node> children;
     public Node(){
@@ -31,8 +34,8 @@ public class Node{
 			//current.children[ruleIndex].value = production.get(ruleIndex);
 			if(production.get(symbolIndex+1).category == "nonTerminal"){  //isnonterminal
 				for(State s : Parser.StateSet.get(stateSetIndex)){
-					if(s.rulePosition == Grammar.get(s.ruleIndex).size()-1){
-						if(current.children.get(symbolIndex).symbol.number == Grammar.get(s.ruleIndex).get(0).number){
+					if(s.rulePosition == Grammar.get(s.ruleIndex).size()-1){  //completed?
+						if(current.children.get(symbolIndex).symbol.number == Grammar.get(s.ruleIndex).get(0).number){  //look for completed rules for this nonterminal within the same S[j]  //EXISTENCE AND UNIQUENESS
 							stateSetIndex = current.children.get(symbolIndex).buildParseTree(Grammar.get(s.ruleIndex), stateSetIndex, Grammar, Parser);
 							break;
 						}
@@ -66,4 +69,20 @@ public class Node{
 	    }
 	}
 	
+	 void join(Node child, String s, boolean sign){
+	    	Edge e = new Edge(child,s,sign);
+	    	edges.add(e);
+//	    	child.parent = this;
+	    }
+	 
+	 	
+	    public void detach(Node v){
+			for(Edge e : edges){
+				if(e.vertex == v){
+					edges.remove(e);
+					break;
+				}
+			}
+		}
+	    
 }

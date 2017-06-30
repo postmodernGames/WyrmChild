@@ -10,6 +10,7 @@ import Earley.Earley;
 import SymbolTable.SymbolTable;
 import scanner.Scanner;
 import symbol.*;
+import symbol.Symbol.SymbolType;
 import Node.*;
 import Socket.SimpleSocket;
 
@@ -25,7 +26,7 @@ public class Apiary
 	public static void main(String[] args) throws UnknownHostException, IOException{
 		
 		SimpleSocket socket = new SimpleSocket();
-		socket.communicate("toronto-stg.kuali.co", "/api/cm/courses", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU4NzdhY2E2YWFjODQ5MGJkNTU3MDY2MiIsImlzcyI6Imt1YWxpLmNvIiwiZXhwIjoxNTE1NzczOTkwLCJpYXQiOjE0ODQyMzc5OTB9.TTLFeBOvsrT7QYcIzjF8IHwmUFHUapb4iLKMcN3uPMU");
+		socket.communicate("toronto.kuali.co", "/api/cm/courses", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU4ZGU5YzcwNzZkMmExNDEzNmE1YTc1NyIsImlzcyI6Imt1YWxpLmNvIiwiZXhwIjoxNTIyNTIwMDQ4LCJpYXQiOjE0OTA5ODQwNDh9.m4AvpBspEKlUSVMvjUTKHmqOPJJqtu0t9zkNgRqi_EY");
 		try {
 			in = new FileInputStream("C:\\Users\\grahamr9\\workspace\\Apiary\\socketOut.txt");
 			out = new PrintWriter("C:\\Users\\grahamr9\\workspace\\Apiary\\output.txt");
@@ -132,7 +133,7 @@ public class Apiary
 	
 	public static void descent(ArrayList<String> header, ArrayList<String> record, Node current, String title){
 		boolean flag = false;
-		if(current.symbol.number==5 && current.symbol.category == "nonTerminal"){  //Symbol is M 
+		if(current.symbol.symbolIndex==5 && current.symbol.symbolType == SymbolType.nonTerminal){  //Symbol is M 
 			if(title.equals("")){
 				title = current.children.get(0).symbol.token;
 			}
@@ -142,7 +143,7 @@ public class Apiary
 				title = '"' + title + '"';
 			}
 			descent(header,record,current.children.get(2),title);
-		} else if(current.symbol.number == 6  && current.symbol.category == "nonTerminal" && current.children.get(0).symbol.category == "terminal"){
+		} else if(current.symbol.symbolIndex == 6  && current.symbol.symbolType == SymbolType.nonTerminal && current.children.get(0).symbol.symbolType == SymbolType.terminal){
 			processEntry(header, record, title,  current.children.get(0).symbol.token);
 		} else {
 			if(current.children!=null){
