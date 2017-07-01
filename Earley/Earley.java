@@ -180,8 +180,7 @@ public class Earley {
 		return completeFlag;
 	}
 
-	public int buildParseTree(ArrayList<Symbol> production, int stateSetIndex, ArrayList<ArrayList<Symbol>> Grammar, Earley Parser){
-		Node current = this;
+	public int buildParseTree(Node current, ArrayList<Symbol> production, int stateSetIndex, ArrayList<ArrayList<Symbol>> Grammar){
 		int n = production.size()-1;
 		current.children = new ArrayList<Node>();
 		ensureNodeSize(current.children,n);
@@ -190,22 +189,22 @@ public class Earley {
 			//current.children[ruleIndex] = current;
 			current.children.set(symbolIndex, new Node(production.get(symbolIndex+1)));
 			//current.children[ruleIndex].value = production.get(ruleIndex);
-			if(production.get(symbolIndex+1).category == "nonTerminal"){  //isnonterminal
-				for(State s : Parser.StateSet.get(stateSetIndex)){
-					if(s.rulePosition == Grammar.get(s.ruleIndex).size()-1){  //completed?
-						if(current.children.get(symbolIndex).symbol.number == Grammar.get(s.ruleIndex).get(0).number){  //look for completed rules for this nonterminal within the same S[j]  //EXISTENCE AND UNIQUENESS
-							stateSetIndex = current.children.get(symbolIndex).buildParseTree(Grammar.get(s.ruleIndex), stateSetIndex, Grammar, Parser);
+			if(production.get(symbolIndex+1).isNonTerminal()){
+				for(State s : StateSet.get(stateSetIndex)){
+					if(s.isComplete()){
+						if(current.children.get(symbolIndex).symbol.symbolIndex == Grammar.get(s.ruleIndex).get(0).symbolIndex){  //look for completed rules for this nonterminal within the same S[j]  //EXISTENCE AND UNIQUENESS
+							stateSetIndex = buildParseTree(current.children.get(symbolIndex), Grammar.get(s.ruleIndex), stateSetIndex, Grammar);
 							break;
 						}
 					}
 				}
 			}
 			else {
-				for(State s : Parser.StateSet.get(stateSetIndex)){
+				for(State s : StateSet.get(stateSetIndex)){
 					if(s.token!=null){
 						current.children.get(symbolIndex).symbol = new Symbol();
-						current.children.get(symbolIndex).symbol.category = "terminal";
-						current.children.get(symbolIndex).symbol.number = Grammar.get(s.ruleIndex).get(s.rulePosition).number;
+						current.children.get(symbolIndex).symbol.symbolType = SymbolType.terminal;
+						current.children.get(symbolIndex).symbol.symbolIndex = Grammar.get(s.ruleIndex).get(s.rulePosition).symbolIndex;
 						current.children.get(symbolIndex).symbol.token = s.token;
 						//current.children[ruleIndex].value.value = new String(s.token);
 
