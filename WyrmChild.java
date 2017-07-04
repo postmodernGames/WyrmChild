@@ -86,7 +86,6 @@ public class WyrmChild
 			
 			while(!quitFlag){
 				Parser.reset();
-				Node root = new Node(P);
 				completeFlag = false;
 				while(!quitFlag&&!completeFlag){
 					if((y = scanner.giveToken())==null) { //getToken(data))==null){
@@ -100,7 +99,7 @@ public class WyrmChild
 				}
 				
 				System.out.println("***********Holistic calling build parse tree***************");
-				Parser.buildParseTree(root, Grammar.get(0),Parser.inputIndex-1,Grammar);
+				Parser.buildParseTree(Grammar,P,Parser.inputIndexinputIndex);
 				System.out.println("***********in Holistic***************");
 				
 

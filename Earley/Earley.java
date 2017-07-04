@@ -1,8 +1,6 @@
 package Earley;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.ListIterator;
+import java.util.*;
 
 import Node.Node;
 import SymbolTable.SymbolTable;
@@ -43,23 +41,24 @@ public class Earley {
 	}
 
 
-	public class State{
+	class State{
 		public int ruleIndex;
 		public int rulePosition;
 		public int inputPosition;
 		public String token;
+
 		public State(int x, int y, int z){
 			ruleIndex = x;
 			rulePosition = y;
 			inputPosition = z;
 		};
+
 		public State(int x, int y, int z, String s){
 			ruleIndex = x;
 			rulePosition = y;
 			inputPosition = z;
 			token =s;
 		};
-
 
 		public int nextSymbol(ArrayList<ArrayList<Symbol>> Grammar){
 			if(Grammar.get(ruleIndex).size()>rulePosition+1){
@@ -73,7 +72,6 @@ public class Earley {
 			//A completed state is one where s = (X-> ...@)
 			return this.rulePosition>=Grammar.get(s.ruleIndex).size()-1;
 		}
-
 
 		public String print(ArrayList<ArrayList<Symbol>> Grammar, ArrayList<Character> dictionary, ArrayList<Character> lexicon){
 			String ret = "";
@@ -119,7 +117,7 @@ public class Earley {
 		return accept;
 	}
 	
-	static void scan(Symbol y, State s, int inputIndex, ArrayList<ArrayList<Symbol>> Grammar, ArrayList<ArrayList<State>> stateSet,  ArrayList<Character> dictionary, ArrayList<Character> lexicon){
+	void scan(Symbol y, State s, int inputIndex, ArrayList<ArrayList<Symbol>> Grammar, ArrayList<ArrayList<State>> stateSet,  ArrayList<Character> dictionary, ArrayList<Character> lexicon){
 		if(y!=null){
 		//	if((Grammar.get(s.ruleIndex).get(s.rulePosition+1).symbolIndex==-1)&&(Grammar.get(s.ruleIndex).get(s.rulePosition+1).equals(y.token))||
 			if((Grammar.get(s.ruleIndex).get(s.rulePosition+1).symbolIndex==y.symbolIndex)&&y.symbolType == SymbolType.terminal)	{
@@ -134,7 +132,7 @@ public class Earley {
 		}
 	}
 
-	static boolean inSet(State x, ArrayList<State> stateSet){
+	boolean inSet(State x, ArrayList<State> stateSet){
 		for(State y : stateSet){
 			if(		x.ruleIndex == y.ruleIndex &&
 					x.rulePosition == y.rulePosition &&
@@ -144,7 +142,7 @@ public class Earley {
 		return false;
 	}
 	
-	static void predict(State s, int inputIndex, ArrayList<ArrayList<Symbol>> Grammar, ArrayList<ArrayList<State>> stateSet,  ArrayList<Character> dictionary, ArrayList<Character> lexicon ){
+	void predict(State s, int inputIndex, ArrayList<ArrayList<Symbol>> Grammar, ArrayList<ArrayList<State>> stateSet,  ArrayList<Character> dictionary, ArrayList<Character> lexicon ){
 		for(int ruleIndex=0; ruleIndex < Grammar.size(); ruleIndex++){
 			//for every rule that expands the nonterminal pointed to by s
 			if(Grammar.get(ruleIndex).get(0).symbolIndex == Grammar.get(s.ruleIndex).get(s.rulePosition+1).symbolIndex){
@@ -157,7 +155,7 @@ public class Earley {
 	}
 	
 	//s = (X-> ...@)
-	static boolean complete(State s, int inputIndex, ArrayList<ArrayList<Symbol>> Grammar, ArrayList<ArrayList<State>> stateSet, ArrayList<Character> dictionary, ArrayList<Character> lexicon){
+	boolean complete(State s, int inputIndex, ArrayList<ArrayList<Symbol>> Grammar, ArrayList<ArrayList<State>> stateSet, ArrayList<Character> dictionary, ArrayList<Character> lexicon){
 		boolean completeFlag = false;
 		int j = s.inputPosition;
 		ArrayList<State> Sj = stateSet.get(j);
@@ -180,20 +178,32 @@ public class Earley {
 		return completeFlag;
 	}
 
-	public int buildParseTree(Node current, ArrayList<Symbol> production, int stateSetIndex, ArrayList<ArrayList<Symbol>> Grammar){
-		int n = production.size()-1;
-		current.children = new ArrayList<Node>();
-		ensureNodeSize(current.children,n);
-		for(int symbolIndex =n-1; symbolIndex >=0; symbolIndex--){
-			//System.out.println(production.get(ruleIndex));
-			//current.children[ruleIndex] = current;
-			current.children.set(symbolIndex, new Node(production.get(symbolIndex+1)));
-			//current.children[ruleIndex].value = production.get(ruleIndex);
-			if(production.get(symbolIndex+1).isNonTerminal()){
+    //Tree needs to do three things:
+    //Add child node with value, get current's value, point current
+
+	public Digraph buildParseTree( ArrayList<ArrayList<Symbol>> Grammar, Symbol P, int inputIndex){
+		Digraph treeSet = new Digraph();
+		treeSet.nodeFunctions.addFunction("symbol");
+		treeSet.addNode();
+		treeSet.nodeFunctions.setFunctionValue("symbol",0,P);
+		buildParseTreeRecursion(0,P, Grammar.get(0), inputIndex-1,Grammar, treeSet);
+		return treeSet;
+	}
+
+
+	public int buildParseTreeRecursion(int current, Symbol S, ArrayList<Symbol> production, int stateSetIndex, ArrayList<ArrayList<Symbol>> Grammar, Digraph tree){
+
+		int childNum = production.size()-1;
+		ArrayList<Integer> children  = tree.createChildren(current,childNum);
+
+		for(int childIndex =childNum-1; childIndex >=0; childIndex--){
+			Symbol C = production.get(childIndex+1);
+			tree.nodeFunctions.setFunctionValue("symbol", children.get(childIndex), C);
+			if(C.isNonTerminal()){
 				for(State s : StateSet.get(stateSetIndex)){
 					if(s.isComplete()){
-						if(current.children.get(symbolIndex).symbol.symbolIndex == Grammar.get(s.ruleIndex).get(0).symbolIndex){  //look for completed rules for this nonterminal within the same S[j]  //EXISTENCE AND UNIQUENESS
-							stateSetIndex = buildParseTree(current.children.get(symbolIndex), Grammar.get(s.ruleIndex), stateSetIndex, Grammar);
+						if(C.symbolIndex == Grammar.get(s.ruleIndex).get(0).symbolIndex){  //look for completed rules for this nonterminal within the same S[j]  //EXISTENCE AND UNIQUENESS
+							stateSetIndex = buildParseTreeRecursion(children.get(childIndex), C, Grammar.get(s.ruleIndex), stateSetIndex, Grammar, tree);
 							break;
 						}
 					}
@@ -202,11 +212,8 @@ public class Earley {
 			else {
 				for(State s : StateSet.get(stateSetIndex)){
 					if(s.token!=null){
-						current.children.get(symbolIndex).symbol = new Symbol();
-						current.children.get(symbolIndex).symbol.symbolType = SymbolType.terminal;
-						current.children.get(symbolIndex).symbol.symbolIndex = Grammar.get(s.ruleIndex).get(s.rulePosition).symbolIndex;
-						current.children.get(symbolIndex).symbol.token = s.token;
-						//current.children[ruleIndex].value.value = new String(s.token);
+						int symbolIndex = Grammar.get(s.ruleIndex).get(s.rulePosition).symbolIndex;
+						Symbol X = new Symbol().terminal().symbolIndex(symbolIndex).token(s.token);
 
 						System.out.println(s.token);
 						break;

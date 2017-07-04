@@ -50,5 +50,19 @@ public class Symbol{
 		if(symbolType == SymbolType.terminal) return true;
 		else return false;
 	}
-	
+
+	public Symbol terminal(){
+		symbolType = SymbolType.terminal;
+		return this;
+	}
+
+	public Symbol token(String s){
+		token = s;
+		return this;
+	}
+
+	public Symbol symbolIndex(int i){
+		symbolIndex = i;
+		return this;
+	}
 }
