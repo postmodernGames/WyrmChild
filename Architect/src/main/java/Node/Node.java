@@ -9,10 +9,11 @@ import Earley.*;
 import symbol.Symbol;
 
 public class Node{
-	int id;
 	public Symbol symbol;
 	public ArrayList<Node> children;
-    public Node(){
+	int id;
+
+	public Node(){
     	children = new ArrayList<Node>();
     }
     public Node(Symbol s){

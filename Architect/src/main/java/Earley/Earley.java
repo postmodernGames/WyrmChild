@@ -14,22 +14,14 @@ import symbol.Symbol.SymbolType;
 
 
 public class Earley {
+	final State F = new State(0, 0, 0);
 	public ArrayList<ArrayList<State>> StateSet;
 	public int inputIndex;
 	State s;
 	ArrayList<ArrayList<Symbol >> Grammar;
 	SymbolTable nst,tst;
-	final State F = new State(0,0,0);
 	ArrayList<State> Z = new ArrayList<State>();
 	
-	
-	public void reset(){
-		Z.clear();
-		Z.add(F);
-		inputIndex = 0;
-		StateSet.clear();
-		StateSet.add(Z);
-	}
 	
 	public Earley(ArrayList<ArrayList<Symbol>> grammar2, SymbolTable nonTerminalSymbolTable,
 		SymbolTable terminalSymbolTable){
@@ -40,61 +32,21 @@ public class Earley {
 		reset();
 	}
 
-
-	class State{
-		public int ruleIndex;
-		public int rulePosition;
-		public int inputPosition;
-		public String token;
-
-		public State(int x, int y, int z){
-			ruleIndex = x;
-			rulePosition = y;
-			inputPosition = z;
-		};
-
-		public State(int x, int y, int z, String s){
-			ruleIndex = x;
-			rulePosition = y;
-			inputPosition = z;
-			token =s;
-		};
-
-		public int nextSymbol(ArrayList<ArrayList<Symbol>> Grammar){
-			if(Grammar.get(ruleIndex).size()>rulePosition+1){
-				if(Grammar.get(ruleIndex).get(rulePosition+1).symbolType == SymbolType.nonTerminal)
-					return Grammar.get(ruleIndex).get(rulePosition+1).symbolIndex;
-			}
-			return -1;
-		}
-
-		public boolean isComplete(){
-			//A completed state is one where s = (X-> ...@)
-			return this.rulePosition>=Grammar.get(s.ruleIndex).size()-1;
-		}
-
-		public String print(ArrayList<ArrayList<Symbol>> Grammar, ArrayList<Character> dictionary, ArrayList<Character> lexicon){
-			String ret = "";
-			try{
-				for(int i=1; i<Grammar.get(ruleIndex).size(); i++){
-					if(Grammar.get(ruleIndex).get(i).symbolType==SymbolType.terminal){
-						ret+=  lexicon.get(Grammar.get(ruleIndex).get(i).symbolIndex) ;
-					}
-					else ret += dictionary.get(Grammar.get(ruleIndex).get(i).symbolIndex);
-				}
-				ret = ret.substring(0,rulePosition) + '@' + ret.substring(rulePosition,ret.length());
-				ret = dictionary.get(Grammar.get(ruleIndex).get(0).symbolIndex) + "-> " + ret;
-				ret += " : " + ruleIndex + " " + rulePosition + " " + inputPosition;
-				return ret;
-			} catch(java.lang.IndexOutOfBoundsException e) {
-				System.out.println("Error in STATE print");
-			}
-			return ret;
+	public static void ensureNodeSize(ArrayList<Node> node, int size) {
+		// Prevent excessive copying while we're adding
+		node.ensureCapacity(size);
+		while (node.size() < size) {
+			node.add(new Node());
 		}
 	}
 
-
-
+	public void reset() {
+		Z.clear();
+		Z.add(F);
+		inputIndex = 0;
+		StateSet.clear();
+		StateSet.add(Z);
+	}
 
 	//Is y always a terminal? Shouldn'y I just pass a char
 	public boolean parseSymbol(Symbol y){
@@ -183,9 +135,9 @@ public class Earley {
 
 	public Digraph buildParseTree( ArrayList<ArrayList<Symbol>> Grammar, Symbol P, int inputIndex){
 		Digraph treeSet = new Digraph();
-		treeSet.nodeFunctions.addFunction("symbol");
+		treeSet.nodeFunctions.addFunction("src/main/java/symbol");
 		treeSet.addNode();
-		treeSet.nodeFunctions.setFunctionValue("symbol",0,P);
+		treeSet.nodeFunctions.setFunctionValue("src/main/java/symbol", 0, P);
 		buildParseTreeRecursion(0,P, Grammar.get(0), inputIndex-1,Grammar, treeSet);
 		return treeSet;
 	}
@@ -198,7 +150,7 @@ public class Earley {
 
 		for(int childIndex =childNum-1; childIndex >=0; childIndex--){
 			Symbol C = production.get(childIndex+1);
-			tree.nodeFunctions.setFunctionValue("symbol", children.get(childIndex), C);
+			tree.nodeFunctions.setFunctionValue("src/main/java/symbol", children.get(childIndex), C);
 			if(C.isNonTerminal()){
 				for(State s : StateSet.get(stateSetIndex)){
 					if(s.isComplete()){
@@ -226,11 +178,58 @@ public class Earley {
 		return stateSetIndex;
 	}
 
-	public static void ensureNodeSize(ArrayList<Node> node, int size) {
-		// Prevent excessive copying while we're adding
-		node.ensureCapacity(size);
-		while (node.size() < size) {
-			node.add(new Node());
+	class State {
+		public int ruleIndex;
+		public int rulePosition;
+		public int inputPosition;
+		public String token;
+
+		public State(int x, int y, int z) {
+			ruleIndex = x;
+			rulePosition = y;
+			inputPosition = z;
+		}
+
+		;
+
+		public State(int x, int y, int z, String s) {
+			ruleIndex = x;
+			rulePosition = y;
+			inputPosition = z;
+			token = s;
+		}
+
+		;
+
+		public int nextSymbol(ArrayList<ArrayList<Symbol>> Grammar) {
+			if (Grammar.get(ruleIndex).size() > rulePosition + 1) {
+				if (Grammar.get(ruleIndex).get(rulePosition + 1).symbolType == SymbolType.nonTerminal)
+					return Grammar.get(ruleIndex).get(rulePosition + 1).symbolIndex;
+			}
+			return -1;
+		}
+
+		public boolean isComplete() {
+			//A completed state is one where s = (X-> ...@)
+			return this.rulePosition >= Grammar.get(s.ruleIndex).size() - 1;
+		}
+
+		public String print(ArrayList<ArrayList<Symbol>> Grammar, ArrayList<Character> dictionary, ArrayList<Character> lexicon) {
+			String ret = "";
+			try {
+				for (int i = 1; i < Grammar.get(ruleIndex).size(); i++) {
+					if (Grammar.get(ruleIndex).get(i).symbolType == SymbolType.terminal) {
+						ret += lexicon.get(Grammar.get(ruleIndex).get(i).symbolIndex);
+					} else ret += dictionary.get(Grammar.get(ruleIndex).get(i).symbolIndex);
+				}
+				ret = ret.substring(0, rulePosition) + '@' + ret.substring(rulePosition, ret.length());
+				ret = dictionary.get(Grammar.get(ruleIndex).get(0).symbolIndex) + "-> " + ret;
+				ret += " : " + ruleIndex + " " + rulePosition + " " + inputPosition;
+				return ret;
+			} catch (java.lang.IndexOutOfBoundsException e) {
+				System.out.println("Error in STATE print");
+			}
+			return ret;
 		}
 	}
 

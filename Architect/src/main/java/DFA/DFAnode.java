@@ -1,12 +1,9 @@
 package DFA;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PushbackInputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
-import java.io.*;
 
 import Node.*;
 import symbol.Symbol;
@@ -124,21 +121,6 @@ public class DFAnode extends Vertex{
 		return dnode;
 	}
 	
-	
-	
-
-	public void eclosure(){
-		for(int v=0;v<this.nfanodes.size();v++){
-			for(int e=0;e<this.nfanodes.get(v).edges.size();e++){
-				if((this.nfanodes.get(v).edges.get(e).label == "") && !this.nfanodes.contains(this.nfanodes.get(v).edges.get(e).vertex)){
-					this.nfanodes.add(this.nfanodes.get(v).edges.get(e).vertex);
-					if(this.nfanodes.get(v).edges.get(e).vertex.accept) this.accept = true; 
-					this.eclosure();
-				}
-			}
-		}
-	}
-
 	/*
 	* asserts this node's symbol and its children's symbol refer to the rule
 	 */
@@ -163,7 +145,7 @@ public class DFAnode extends Vertex{
 		}
 		System.out.println("");
 	}
-	
+
 	public static void Thompson(NFA v, ArrayList<ArrayList<Symbol>> Grammar, int level){
 		outer:
 		for(int index=0; index< Grammar.size(); index++){   //for each Grammar rule
@@ -228,7 +210,7 @@ public class DFAnode extends Vertex{
 					Thompson(v,Grammar,level+1);
 					System.out.println(v.end.id + "-> " + second.start.id);
 					Thompson(second,Grammar,level+1);
-					
+
 					break outer;
 				case 8:   //Terminal
 					printLevel(level,index,v);
@@ -259,7 +241,7 @@ public class DFAnode extends Vertex{
 			}
 		}
 	}
-		
+	
 	public static void convertNFAtoDFA(ArrayList<DFAnode> DFA, DFAnode dnode){
 		HashSet<String> Completed = new HashSet<String>();
 		for(Vertex v: dnode.nfanodes){
@@ -296,7 +278,7 @@ public class DFAnode extends Vertex{
 			}
 		}
 	}
-
+		
 	public static void ensureSize(ArrayList<String> list, int size) {
 	    // Prevent excessive copying while we're adding
 	    list.ensureCapacity(size);
@@ -304,9 +286,9 @@ public class DFAnode extends Vertex{
 	        list.add("");
 	    }
 	}
-	
+
 	public static void printNFA(ArrayList<ArrayList<Integer>> stack, Vertex current, ArrayList<Character> dictionary, ArrayList<Character> lexicon){
-		 int a,b;		
+		 int a,b;
 		for(Edge e : current.edges){
 			a = current.hashCode();
 			b = e.vertex.hashCode();
@@ -336,7 +318,7 @@ public class DFAnode extends Vertex{
 	
 	public static void printDFA(ArrayList<ArrayList<Integer>> stack, Vertex current, ArrayList<Character> dictionary, ArrayList<Character> lexicon){
 		 int a,b,c;
-		 
+
 		for(Edge e : current.edges){
 			a = current.id;
 			b = e.vertex.id;
@@ -348,7 +330,7 @@ public class DFAnode extends Vertex{
 				}
 			}
 			if(!match){
-				if(current.accept) System.out.println(a + "--> " +  (e.label.equals(" ") ? "_" : e.label) + " -->" +b + "   *" ); 
+				if(current.accept) System.out.println(a + "--> " +  (e.label.equals(" ") ? "_" : e.label) + " -->" +b + "   *" );
 				System.out.println(a + "--> " + (e.label.equals(" ") ? "_" : e.label) + " -->" +b);
 				ArrayList<Integer> temp = new ArrayList<>();
 				temp.add(a);
@@ -361,11 +343,11 @@ public class DFAnode extends Vertex{
 			}
 		}
 	}
-
+	
 	public static Symbol giveToken(PushbackInputStream data, ArrayList<DFAnode> recognizers){
 		Symbol y = new Symbol();
 		y.category = "terminal";
-		
+
 			boolean match = true;
 			String lastgood = "";
 			String accum = "";
@@ -373,7 +355,7 @@ public class DFAnode extends Vertex{
 			int index=0;
 			Vertex v = (Vertex)recognizers.get(index);
 			String j = "";
-			
+
 			outer:
 			while(true){
 				if(match){
@@ -390,7 +372,7 @@ public class DFAnode extends Vertex{
 					accum += c;
 					match = false;
 				}
-				if(!(i==-1 || i == 255)){ 
+				if(!(i==-1 || i == 255)){
 					for(Edge e : v.edges){
 						if(e.label.equals(j)  || (e.label.charAt(0)=='^' && e.label.charAt(1)!=c) || (e.positive==false && (c>=e.label.charAt(0) && c<= e.label.charAt(1) )) ){  //so far so good
 							if(e.vertex.accept){     //so far, so better: we are at an acceptance state, so save the accumulated string--it will be our token if we can't make a longer one
@@ -426,17 +408,17 @@ public class DFAnode extends Vertex{
 					}
 				}
 			} //end while
-		
+
 		return y;
 	}
-	
+
 	static char readChar(PushbackInputStream data){
 		char c = 0xffff;
 		byte b;
 		int j,k;
 		String text = null;
 		int count=0;
-		
+
 		try {
 			b = (byte)data.read();
 			text = String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0');
@@ -462,13 +444,25 @@ public class DFAnode extends Vertex{
 			}
 			text = new String(bytes, "UTF-8");
 			c = text.charAt(0);
-			
-			
+
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return c;
+	}
+	
+	public void eclosure(){
+		for(int v=0;v<this.nfanodes.size();v++){
+			for(int e=0;e<this.nfanodes.get(v).edges.size();e++){
+				if((this.nfanodes.get(v).edges.get(e).label == "") && !this.nfanodes.contains(this.nfanodes.get(v).edges.get(e).vertex)){
+					this.nfanodes.add(this.nfanodes.get(v).edges.get(e).vertex);
+					if(this.nfanodes.get(v).edges.get(e).vertex.accept) this.accept = true;
+					this.eclosure();
+				}
+			}
+		}
 	}
 	
 }

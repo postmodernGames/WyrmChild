@@ -12,23 +12,23 @@ import DFA.DFAnode;
 //what is token? the terminal value//I should drop this, it should be in the terminalSymboltable
 
 public class Symbol{
-	public enum SymbolType {
-		terminal, nonTerminal
-	};  
 	public SymbolType symbolType;
+	;
 	public int symbolIndex;
 	public String token;
 
-
-	public Symbol(){
+	public Symbol() {
 		symbolType = SymbolType.nonTerminal;
-	};
-	
-	public Symbol(char c){
+	}
+
+
+	public Symbol(char c) {
 		symbolType = SymbolType.terminal;
 		token = "" + c;
 	}
 
+	;
+	
 	Symbol(ArrayList<DFAnode> lexicon2, ArrayList<Character> lexicon, char c, String s){
 		symbolIndex = lexicon2.size();
 		lexicon2.add(new DFAnode());
@@ -40,7 +40,7 @@ public class Symbol{
 		if(s == null) return false;
 		return symbolType==s.symbolType && symbolIndex == s.symbolIndex;
 	}
-	
+
 	public boolean isNonTerminal(){
 		if(symbolType == SymbolType.nonTerminal) return true;
 		else return false;
@@ -64,5 +64,9 @@ public class Symbol{
 	public Symbol symbolIndex(int i){
 		symbolIndex = i;
 		return this;
+	}
+
+	public enum SymbolType {
+		terminal, nonTerminal
 	}
 }
