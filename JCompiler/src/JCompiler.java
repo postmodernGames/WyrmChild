@@ -13,6 +13,7 @@ import javax.tools.SimpleJavaFileObject;
 public class JCompiler {
 
     public static void main(String[] args) throws MalformedURLException, IllegalAccessException, InstantiationException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
+        System.out.println("Hello");
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null) {
             System.err.println("compiler not available");
