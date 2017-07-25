@@ -1,0 +1,3 @@
+  thislinebeginswithspace check check;
+  thislinebeginswithspace check check ;
+this line has no space at begining
