@@ -1,14 +1,19 @@
 package scanner;
 
-import java.util.*;
-import java.io.*;
-
-import symbol.*;
-import symbol.Symbol.SymbolType;
-import DFA.*;
+import DFA.DFAnode;
 import Earley.Earley;
+import Earley.ParseTree;
 import Node.Node;
 import SymbolTable.SymbolTable;
+import symbol.Symbol;
+import symbol.Symbol.SymbolType;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.PrintWriter;
+import java.io.PushbackInputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Scanner {
     static PrintWriter out;
@@ -89,6 +94,7 @@ public class Scanner {
         Earley Scanner = new Earley(Grammar, nst, tst);
 
         Node root = new Node(S);
+        ParseTree parseTree = new ParseTree(Scanner.StateSet);
 
         try (BufferedReader br = new BufferedReader(new FileReader(lexicalInputFilename))) {
             Scanner.reset();
@@ -97,11 +103,11 @@ public class Scanner {
                     Symbol y = readToken(tst);
                     //   		System.out.println("Reading: " + y.token + ", Hit count: " + i);
                     i++;
-                    Scanner.processSymbol(y);
+                    Scanner.parseSymbol(y);
                 }
-                Scanner.processSymbol(null);
+                Scanner.parseSymbol(null);
 //				System.out.println("***********calling Build Parse Tree in scanner***************");
-                root.buildParseTree(Grammar.get(0), Scanner.inputIndex - 1, Grammar, Scanner);
+                parseTree.buildParseTree(Grammar, Grammar.get(0).get(0), Scanner.inputIndex - 1);
 //				System.out.println("***********   Using printTree to  in Scanner ***************");
 
                 //			printTree(root,nst.dictionary,tst.dictionary);

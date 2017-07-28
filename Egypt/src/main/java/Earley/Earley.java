@@ -29,6 +29,7 @@ public class Earley {
         nst = nonTerminalSymbolTable;
         tst = terminalSymbolTable;
         StateSet = new ArrayList<>();
+        State.initialize(Grammar);
         reset();
     }
 
@@ -133,106 +134,68 @@ public class Earley {
     //Tree needs to do three things:
     //Add child node with value, get current's value, point current
 
-    public Digraph buildParseTree(ArrayList<ArrayList<Symbol>> Grammar, Symbol P, int inputIndex) {
-        Digraph treeSet = new Digraph();
-        treeSet.nodeFunctions.addFunction("symbol");
-        treeSet.addNode();
-        treeSet.nodeFunctions.setFunctionValue("symbol", 0, P);
-        buildParseTreeRecursion(0, P, Grammar.get(0), inputIndex - 1, Grammar, treeSet);
-        return treeSet;
+
+}
+
+class State {
+    static ArrayList<ArrayList<Symbol>> Grammar;
+    public int ruleIndex;
+    public int rulePosition;
+    public int inputPosition;
+    public String token;
+
+    public State(int x, int y, int z) {
+        ruleIndex = x;
+        rulePosition = y;
+        inputPosition = z;
     }
 
-
-    public int buildParseTreeRecursion(int current, Symbol S, ArrayList<Symbol> production, int stateSetIndex, ArrayList<ArrayList<Symbol>> Grammar, Digraph tree) {
-
-        int childNum = production.size() - 1;
-        ArrayList<Integer> children = tree.createChildren(current, childNum);
-
-        for (int childIndex = childNum - 1; childIndex >= 0; childIndex--) {
-            Symbol C = production.get(childIndex + 1);
-            tree.nodeFunctions.setFunctionValue("symbol", children.get(childIndex), C);
-            if (C.isNonTerminal()) {
-                for (State s : StateSet.get(stateSetIndex)) {
-                    if (s.isComplete()) {
-                        if (C.symbolIndex == Grammar.get(s.ruleIndex).get(0).symbolIndex) {  //look for completed rules for this nonterminal within the same S[j]  //EXISTENCE AND UNIQUENESS
-                            stateSetIndex = buildParseTreeRecursion(children.get(childIndex), C, Grammar.get(s.ruleIndex), stateSetIndex, Grammar, tree);
-                            break;
-                        }
-                    }
-                }
-            } else {
-                for (State s : StateSet.get(stateSetIndex)) {
-                    if (s.token != null) {
-                        int symbolIndex = Grammar.get(s.ruleIndex).get(s.rulePosition).symbolIndex;
-                        Symbol X = new Symbol().terminal().symbolIndex(symbolIndex).token(s.token);
-
-                        System.out.println(s.token);
-                        break;
-                    }
-                }
-
-                stateSetIndex--;
-            }
-        }
-        return stateSetIndex;
+    public State(int x, int y, int z, String s) {
+        ruleIndex = x;
+        rulePosition = y;
+        inputPosition = z;
+        token = s;
     }
 
-    class State {
-        public int ruleIndex;
-        public int rulePosition;
-        public int inputPosition;
-        public String token;
+    public static void initialize(ArrayList<ArrayList<Symbol>> g) {
+        Grammar = g;
+    }
 
-        public State(int x, int y, int z) {
-            ruleIndex = x;
-            rulePosition = y;
-            inputPosition = z;
+    public int nextSymbol(ArrayList<ArrayList<Symbol>> Grammar) {
+        if (Grammar.get(ruleIndex).size() > rulePosition + 1) {
+            if (Grammar.get(ruleIndex).get(rulePosition + 1).symbolType == SymbolType.nonTerminal)
+                return Grammar.get(ruleIndex).get(rulePosition + 1).symbolIndex;
         }
+        return -1;
+    }
 
-        public State(int x, int y, int z, String s) {
-            ruleIndex = x;
-            rulePosition = y;
-            inputPosition = z;
-            token = s;
-        }
+    public boolean matchSymbol(ArrayList<ArrayList<Symbol>> Grammar, Symbol y) {
+        int ns = nextSymbol(Grammar);
+        int ysi = y.symbolIndex;
+        if (ns != -1 && ns == ysi) return true;
+        else return false;
+    }
 
-        public int nextSymbol(ArrayList<ArrayList<Symbol>> Grammar) {
-            if (Grammar.get(ruleIndex).size() > rulePosition + 1) {
-                if (Grammar.get(ruleIndex).get(rulePosition + 1).symbolType == SymbolType.nonTerminal)
-                    return Grammar.get(ruleIndex).get(rulePosition + 1).symbolIndex;
+    public boolean isComplete() {
+        //A completed state is one where s = (X-> ...@)
+        return this.rulePosition >= Grammar.get(ruleIndex).size() - 1;
+    }
+
+    public String print(ArrayList<ArrayList<Symbol>> Grammar, ArrayList<Character> dictionary, ArrayList<Character> lexicon) {
+        String ret = "";
+        try {
+            for (int i = 1; i < Grammar.get(ruleIndex).size(); i++) {
+                if (Grammar.get(ruleIndex).get(i).symbolType == SymbolType.terminal) {
+                    ret += lexicon.get(Grammar.get(ruleIndex).get(i).symbolIndex);
+                } else ret += dictionary.get(Grammar.get(ruleIndex).get(i).symbolIndex);
             }
-            return -1;
-        }
-
-        public boolean matchSymbol(ArrayList<ArrayList<Symbol>> Grammar, Symbol y) {
-            int ns = nextSymbol(Grammar);
-            int ysi = y.symbolIndex;
-            if (ns != -1 && ns == ysi) return true;
-            else return false;
-        }
-
-        public boolean isComplete() {
-            //A completed state is one where s = (X-> ...@)
-            return this.rulePosition >= Grammar.get(s.ruleIndex).size() - 1;
-        }
-
-        public String print(ArrayList<ArrayList<Symbol>> Grammar, ArrayList<Character> dictionary, ArrayList<Character> lexicon) {
-            String ret = "";
-            try {
-                for (int i = 1; i < Grammar.get(ruleIndex).size(); i++) {
-                    if (Grammar.get(ruleIndex).get(i).symbolType == SymbolType.terminal) {
-                        ret += lexicon.get(Grammar.get(ruleIndex).get(i).symbolIndex);
-                    } else ret += dictionary.get(Grammar.get(ruleIndex).get(i).symbolIndex);
-                }
-                ret = ret.substring(0, rulePosition) + '@' + ret.substring(rulePosition, ret.length());
-                ret = dictionary.get(Grammar.get(ruleIndex).get(0).symbolIndex) + "-> " + ret;
-                ret += " : " + ruleIndex + " " + rulePosition + " " + inputPosition;
-                return ret;
-            } catch (java.lang.IndexOutOfBoundsException e) {
-                System.out.println("Error in STATE print");
-            }
+            ret = ret.substring(0, rulePosition) + '@' + ret.substring(rulePosition, ret.length());
+            ret = dictionary.get(Grammar.get(ruleIndex).get(0).symbolIndex) + "-> " + ret;
+            ret += " : " + ruleIndex + " " + rulePosition + " " + inputPosition;
             return ret;
+        } catch (java.lang.IndexOutOfBoundsException e) {
+            System.out.println("Error in STATE print");
         }
+        return ret;
     }
-
 }

@@ -1,11 +1,12 @@
 import DFA.DFAnode;
 import Earley.Earley;
+import Earley.ParseTree;
 import Machine.LayerQueue;
 import Machine.Machine;
 import Machine.Symbolizer;
 import SymbolTable.SymbolTable;
+import scanner.Scanner;
 import symbol.Symbol;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -32,12 +33,12 @@ public class WyrmChild {
             lexiconStream = new FileInputStream(grammarFilename);
             grammarStream = new FileInputStream(grammarFilename);
             //out = new PrintWriter("C:\\Users\\grahamr9\\workspace\\Apiary\\output.txt");
-            //data = new PushbackInputStream(in);
+            data = new PushbackInputStream(lexiconStream);
 
         } catch (Exception e) {
             System.out.println("File error in WyrmChild");
         }
-        //Scanner scanner = new Scanner("C:\\Users\\grahamr9\\workspace\\Apiary\\lexical.txt", data);
+        Scanner scanner = new Scanner("lexical.txt", data);
         HashMap<String, Integer> hm = new HashMap<String, Integer>();
         ArrayList<String> header = new ArrayList<String>();
 
@@ -56,7 +57,6 @@ public class WyrmChild {
         Symbol S = TerminalSymbolTable.add('S'); //"[ \r\n\t]*(true|false|null|-?[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?)[ \r\n\t]*"
 
 
-
         //How does the lexical and grammar specification overlap?
 
         scanner.build();
@@ -65,6 +65,7 @@ public class WyrmChild {
         }
 
         Earley Parser = new Earley(Grammar, nonTerminalSymbolTable, TerminalSymbolTable);
+        ParseTree parseTree = new ParseTree(Parser.StateSet);
 
         Symbol y = new Symbol();
         boolean quitFlag = false;
@@ -84,7 +85,7 @@ public class WyrmChild {
             }
 
             System.out.println("***********Holistic calling build parse tree***************");
-            Parser.buildParseTree(Grammar, Grammar.get(0).get(0), Parser.inputIndex);
+            parseTree.buildParseTree(Grammar, Grammar.get(0).get(0), Parser.inputIndex);
             System.out.println("***********in Holistic***************");
 
 
@@ -94,3 +95,5 @@ public class WyrmChild {
 
 
     }
+
+}
