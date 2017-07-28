@@ -1,23 +1,22 @@
 package DFA;
 
-import Node.Node;
-
 /**
  * Created by grahamr9 on 7/28/2017.
  */
 
 public class Edge {
-    Node from;
-    Node to;
+    Vertex from;
+    Vertex to;
     String label;
+    Vertex vertex;
 
-    Edge(Node from, Node to, String s) {
+    Edge(Vertex from, Vertex to, String s) {
         this.from = from;
         this.to = to;
         label = s;
     }
 
-    public Edge(Node to, String s) {
+    public Edge(Vertex to, String s) {
         this.to = to;
         label = s;
     }
