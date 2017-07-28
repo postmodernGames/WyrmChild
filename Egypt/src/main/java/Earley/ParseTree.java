@@ -9,8 +9,8 @@ import java.util.ArrayList;
  */
 
 class Tree {
-    ArrayList<Symbol> nodes;
-    ArrayList<ArrayList<Integer>> edges;
+    public ArrayList<Symbol> nodes;
+    public ArrayList<ArrayList<Integer>> edges;
 
     ArrayList<Integer> createChildren(int current, int childNum) {
         edges.add(new ArrayList<Integer>());

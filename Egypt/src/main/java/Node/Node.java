@@ -1,4 +1,4 @@
-package Nodce;
+package Node;
 
 import DFA.Edge;
 import symbol.Symbol;

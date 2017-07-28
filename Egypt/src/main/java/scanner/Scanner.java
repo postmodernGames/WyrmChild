@@ -93,7 +93,7 @@ public class Scanner {
 
         Earley Scanner = new Earley(Grammar, nst, tst);
 
-        Node root = new Node(S);
+
         ParseTree parseTree = new ParseTree(Scanner.StateSet);
 
         try (BufferedReader br = new BufferedReader(new FileReader(lexicalInputFilename))) {
@@ -113,8 +113,8 @@ public class Scanner {
                 //			printTree(root,nst.dictionary,tst.dictionary);
                 //			System.out.println("Out of printtree in Scanner");
                 Scanner.reset();
-                DFAnode dnode = DFAnode.generateDFA(root, Grammar, nst.dictionary, tst.dictionary);
-                //recognizers.add(DFAnode.generateDFA(root,Grammar, nst.dictionary, tst.dictionary));
+                DFAnode dnode = DFAnode.generateDFA(parseTree, Grammar, nst.dictionary, tst.dictionary);
+                //recognizers.add(DFAnode.generateDFA(parseTree,Grammar, nst.dictionary, tst.dictionary));
                 recognizers.add(dnode);
             }
         } catch (Exception e) {

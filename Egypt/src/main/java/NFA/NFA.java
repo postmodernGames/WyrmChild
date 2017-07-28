@@ -1,7 +1,6 @@
-package DFA;
+package NFA;
 
 import Earley.ParseTree;
-import NFA.NFABuilder;
 import symbol.Symbol;
 
 import java.io.IOException;
@@ -20,24 +19,6 @@ class Vertex {
     }
 }
 
-class Bubble {
-    Vertex start;
-    Vertex end;
-    Vertex left;
-    Vertex right;
-    int node;
-
-    Bubble(int n, Vertex start, Vertex end) {
-        this.node = n;
-        this.start = start;
-        this.end = end;
-        left = new Vertex();
-        right = new Vertex();
-        start.join(left, "");
-        right.join(end, "");
-    }
-}
-
 
 public class DFAnode extends Vertex {
     ArrayList<Vertex> Bubblenodes;
@@ -48,7 +29,12 @@ public class DFAnode extends Vertex {
     }
 
     public static DFAnode generateDFA(ParseTree parseTree, ArrayList<ArrayList<Symbol>> Grammar, ArrayList<Character> dictionary, ArrayList<Character> lexicon) {
-        NFABuilder nfabuilder = new NFABuilder(Grammar, parseTree);
+        Vertex start = new Vertex();//Vertex start = new Vertex();
+        Vertex accept = new Vertex();
+        accept.accept = true;
+
+        Bubble bubble = new Bubble(0, start, accept);
+        Thompson(bubble, Grammar, 0);
         ArrayList<ArrayList<Integer>> stack = new ArrayList<>();
         System.out.println("************ DFAnode calling printDFA for Bubble**************");
         printDFA(stack, start, dictionary, lexicon);
@@ -97,6 +83,28 @@ public class DFAnode extends Vertex {
     /*
     * asserts this node's symbol and its children's symbol refer to the rule
      */
+    public static boolean checkProduction(Bubble v, ArrayList<Symbol> rule) {
+        if (!tree.nodes(v.node).equals(rule.get(0))) return false;
+        //replace below with rule.RHS == v.node.children
+        if (v.node.children.size() != rule.size() - 1) return false;
+        for (int j = 0; j < v.node.children.size(); j++) {
+            if (v.node.children.get(j).symbol.equals(rule.get(j + 1)) == false) return false;
+        }
+        return true;
+    }
+
+    public static void printLevel(int level, int index, Bubble v) {
+        String space = "";
+        for (int i = 0; i < level; i++) {
+            space += ".";
+        }
+        System.out.print(space + v.start.id + " " + v.end.id + " r " + index + ", " + tree.nodes(v.node).token + "-->");
+        for (int j = 0; j < v.node.children.size(); j++) {
+            System.out.print(v.node.children.get(j).symbol.token + " ");
+        }
+        System.out.println("");
+    }
+
 
     public static void convertBubbletoDFA(ArrayList<DFAnode> DFA, DFAnode dnode) {
         HashSet<String> Completed = new HashSet<String>();
