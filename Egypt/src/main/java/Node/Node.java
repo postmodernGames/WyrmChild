@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import DFA.Edge;
 import DFA.Vertex;
 import Earley.*;
-
 import symbol.Symbol;
 
 public class Node {
     public Symbol symbol;
     public ArrayList<Node> children;
+    public ArrayList<Edge> edges;
     int id;
 
     public Node() {
@@ -19,15 +19,15 @@ public class Node {
 
     public Node(Symbol s) {
         symbol = new Symbol();
-        symbol.category = s.category;
+        symbol.symbolType = s.symbolType;
         symbol.token = s.token;
-        symbol.number = s.number;
+        symbol.symbolIndex = s.symbolIndex;
         children = new ArrayList<Node>();
     }
 
 
-    void join(Node child, String s, boolean sign) {
-        Edge e = new Edge(child, s, sign);
+    void join(Node child, String edgeLabel) {
+        Edge e = new Edge(child, edgeLabel);
         edges.add(e);
 //	    	child.parent = this;
     }

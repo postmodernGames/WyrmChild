@@ -13,7 +13,6 @@ import java.util.ArrayList;
 
 public class Symbol {
     public SymbolType symbolType;
-    ;
     public int symbolIndex;
     public String token;
 

@@ -30,70 +30,60 @@ class Graph{
    
 }
 
-class Bubble{
-	Node start;
-	Node end;
-	Node node;
-	Bubble(Node n){
-		this.node  = n;
-		start = new Node();
-		end = new Node();
-	}
-	void join(Node child, String s, boolean sign){
-		end.join(child,s,sign);
-	}
+class Vertex extends Node {
+    boolean accept;
+
 }
 
-class Edge{
-	Node from;
-	Node to;
-	String label;
-	boolean positive;
-	Edge(Node from, Node to, String s){
-		this.to = to;
-		label = s;
-		positive = true;
-	}
-	Edge(Node to, String s,boolean sign){
-		this.to = to;
-		label = s;
-		positive = sign;
-	}
+class Bubble{
+    Vertex start;
+    Vertex end;
+    Vertex left;
+    Vertex right;
+    Node node;
+
+    Bubble(Node n, Vertex start, Vertex end) {
+        this.node  = n;
+        this.start = start;
+        this.end = end;
+        left = new Vertex();
+        right = new Vertex();
+        start.edges.join(left, "");
+        right.join(end, "");
+    }
 }
 
 
 public class DFAnode extends Vertex{
-	ArrayList<Vertex> nfanodes;
-	int number;
+    ArrayList<Vertex> Bubblenodes;
+    int number;
 	
 	public DFAnode(){
-		nfanodes = new ArrayList<Vertex>();
-	}
+        Bubblenodes = new ArrayList<Vertex>();
+    }
 
 	public static DFAnode generateDFA(Node root, ArrayList<ArrayList<Symbol>> Grammar, ArrayList<Character> dictionary, ArrayList<Character> lexicon){
 		Vertex start = new Vertex();//Vertex start = new Vertex();
 		Vertex accept = new Vertex();
 		accept.accept= true;
-		NFA v = new NFA(root);  //v.node --> root
-		start.join(v.start, "",true);  //Edge(v.start,É›) âˆˆ start.edges âˆ§  start = v.parent
-		v.end.join(accept, "",true); //Edge(accept,É›) âˆˆ v.edges âˆ§  v = accept.parent
-	
-		Thompson(v,Grammar,0);
-		ArrayList<ArrayList<Integer>> stack = new ArrayList<>();
-		System.out.println("************ DFAnode calling printDFA for NFA**************");
-		printDFA(stack,start,dictionary,lexicon);
-		System.out.println("************ DFAnode leaving printDFA for NFA**************");
-		
-		Vertex.i =0;
+        Graph graph = new Graph();  //v.node --> root
+        Bubble bubble = new Bubble(root, start, accept);
+        Thompson(bubble, Grammar, 0);
+        ArrayList<ArrayList<Integer>> stack = new ArrayList<>();
+        System.out.println("************ DFAnode calling printDFA for Bubble**************");
+        printDFA(stack,start,dictionary,lexicon);
+        System.out.println("************ DFAnode leaving printDFA for Bubble**************");
+
+        Vertex.i =0;
 		ArrayList<DFAnode> DFA = new ArrayList<DFAnode>();
 		DFAnode dnode = new DFAnode();
-		dnode.nfanodes.add(start);
-		dnode.eclosure();
+        dnode.Bubblenodes.add(start);
+        dnode.eclosure();
 		DFA.add(dnode);
 		
 		for(int i=0;i<DFA.size();i++){
-			DFAnode.convertNFAtoDFA(DFA,DFA.get(i));
-		}
+            DFAnode.convertBubbletoDFA(DFA, DFA.get(i));
+        }
 		
 		stack.clear();
 		System.out.println("************ DFAnode calling printDFA**************");
@@ -113,22 +103,22 @@ public class DFAnode extends Vertex{
 		u.join(v, label,true);
 		v.join(accept, "",true); 
 		DFAnode dnode = new DFAnode();
-		dnode.nfanodes.add(start);
-		dnode.eclosure();
+        dnode.Bubblenodes.add(start);
+        dnode.eclosure();
 		
 		ArrayList<DFAnode> DFA = new ArrayList<DFAnode>();
 		DFA.add(dnode);
 		for(int i=0;i<DFA.size();i++){
-			DFAnode.convertNFAtoDFA(DFA,DFA.get(i));
-		}
+            DFAnode.convertBubbletoDFA(DFA, DFA.get(i));
+        }
 		return dnode;
 	}
 	
 	/*
 	* asserts this node's symbol and its children's symbol refer to the rule
 	 */
-	public static boolean checkProduction(NFA v, ArrayList<Symbol> rule){
-		if(!v.node.symbol.equals(rule.get(0))) return false;
+    public static boolean checkProduction(Bubble v, ArrayList<Symbol> rule) {
+        if(!v.node.symbol.equals(rule.get(0))) return false;
 		//replace below with rule.RHS == v.node.children
 		if(v.node.children.size()!=rule.size()-1) return false;
 		for(int j=0; j < v.node.children.size();j++){
@@ -137,8 +127,8 @@ public class DFAnode extends Vertex{
 		return true;
 	}
 
-	public static void printLevel(int level, int index, NFA v){
-		String space ="";
+    public static void printLevel(int level, int index, Bubble v) {
+        String space ="";
 		for(int i=0;i<level;i++){
 			space += ".";
 		}
@@ -149,26 +139,14 @@ public class DFAnode extends Vertex{
 		System.out.println("");
 	}
 
-	public static void Thompson(NFA v, ArrayList<ArrayList<Symbol>> Grammar, int level){
-		outer:
+    public static void Thompson(Bubble v, ArrayList<ArrayList<Symbol>> Grammar, int level) {
+        outer:
 		for(int index=0; index< Grammar.size(); index++){   //for each Grammar rule
 			if(checkProduction(v,Grammar.get(index)) ){  //the node and its children represent rule index
 				switch(index){
-				case 0:   //S->R
-					printLevel(level,index,v);
-					v.node = v.node.children.get(0);
-					Thompson(v,Grammar,level+1);
-					break outer;
-				case 1: //R->D
-					printLevel(level,index,v);
-					v.node = v.node.children.get(0);
-					Thompson(v,Grammar,level+1);
-					break outer;
+                    case 0:  //S->R
+                    case 1: //R->D
 				case 3: //D->K
-					printLevel(level,index,v);
-					v.node = v.node.children.get(0);
-					Thompson(v,Grammar,level+1);
-					break outer;
 				case 7: //K->C
 					printLevel(level,index,v);
 					v.node = v.node.children.get(0);
@@ -176,22 +154,16 @@ public class DFAnode extends Vertex{
 					break outer;
 				case 2:  //Disjunct
 					printLevel(level,index,v);
-					NFA sibling1 = new NFA(v.node.children.get(0));
-					NFA sibling2 = new NFA(v.node.children.get(2));
-					sibling1.end.join(v.end, "",true);
-					sibling2.end.join(v.end, "",true);
-					System.out.println("V: " + v.start.id + ", "  +  v.end.id);
-					v.start.join(sibling1.start, "",true);
-					v.start.join(sibling2.start, "",true);
-					System.out.println("S1: " + sibling1.start.id + ", "  +  sibling1.end.id);
-					System.out.println("S2: " + sibling2.start.id + ", "  +  sibling2.end.id);
+                    Bubble sibling1 = new Bubble(v.node.children.get(0), v.start, v.end);
+                    Bubble sibling2 = new Bubble(v.node.children.get(2), v.start, v.end);
+
 					Thompson(sibling1,Grammar,level+1);
 					Thompson(sibling2,Grammar,level+1);
 					break outer;
 				case 5:  //Star
 					printLevel(level,index,v);
-					NFA insideS = new NFA(v.node.children.get(0));
-					v.start.join(insideS.end,"",true);
+                    Bubble insideS = new Bubble(v.node.children.get(0), v.start, v.end);
+                    v.start.join(insideS.end,"",true);
 					insideS.end.join(v.end, "",true);
 					v.end.join(insideS.start,"",true);
 					insideS.end.join(v.start, "",true);
@@ -204,8 +176,8 @@ public class DFAnode extends Vertex{
 					break outer;
 				case 4:   //Concatenation
 					printLevel(level,index,v);
-					NFA second = new NFA(v.node.children.get(1));
-					v.node = v.node.children.get(0);
+                    Bubble second = new Bubble(v.node.children.get(1), v.start, v.end);
+                    v.node = v.node.children.get(0);
 					for(Edge e : v.end.edges)
 						second.end.edges.add(e);
 					v.end.edges.clear();
@@ -222,8 +194,8 @@ public class DFAnode extends Vertex{
 				case 9:  //Question
 					printLevel(level,index,v);
 					v.start.join(v.end,"",true);
-					NFA insideQ = new NFA(v.node.children.get(0));
-					v.start.join(insideQ.start,"", true);
+                    Bubble insideQ = new Bubble(v.node.children.get(0), v.start, v.end);
+                    v.start.join(insideQ.start,"", true);
 					insideQ.end.join(v.end, "", true);
 					Thompson(insideQ,Grammar,level+1);
 					break outer;
@@ -245,18 +217,18 @@ public class DFAnode extends Vertex{
 		}
 	}
 
-	public static void convertNFAtoDFA(ArrayList<DFAnode> DFA, DFAnode dnode){
-		HashSet<String> Completed = new HashSet<String>();
-		for(Vertex v: dnode.nfanodes){
-			for(Edge e : v.edges){
+    public static void convertBubbletoDFA(ArrayList<DFAnode> DFA, DFAnode dnode) {
+        HashSet<String> Completed = new HashSet<String>();
+        for (Vertex v : dnode.Bubblenodes) {
+            for(Edge e : v.edges){
 				if(!e.label.equals("")){
 					if(!Completed.contains(e.label + e.positive)){
 						DFAnode e_succ = new DFAnode();
-						for(Vertex u : dnode.nfanodes){
-							for(Edge f : u.edges){
+                        for (Vertex u : dnode.Bubblenodes) {
+                            for(Edge f : u.edges){
 								if(f.label.equals(e.label)&& (f.positive == e.positive)){
-									e_succ.nfanodes.add(f.vertex);
-								}
+                                    e_succ.Bubblenodes.add(f.vertex);
+                                }
 								break;
 							}
 						}
@@ -264,8 +236,8 @@ public class DFAnode extends Vertex{
 						e_succ.eclosure();
 						boolean match = false;
 						for(DFAnode y  : DFA){
-							if(y.nfanodes.equals(e_succ.nfanodes)){
-								match = true;
+                            if (y.Bubblenodes.equals(e_succ.Bubblenodes)) {
+                                match = true;
 								Edge e_succEdge = new Edge(y,e.label,e.positive);
 								dnode.edges.add(e_succEdge);
 								break;
@@ -290,8 +262,8 @@ public class DFAnode extends Vertex{
 	    }
 	}
 
-	public static void printNFA(ArrayList<ArrayList<Integer>> stack, Vertex current, ArrayList<Character> dictionary, ArrayList<Character> lexicon){
-		int a, b;
+    public static void printBubble(ArrayList<ArrayList<Integer>> stack, Vertex current, ArrayList<Character> dictionary, ArrayList<Character> lexicon) {
+        int a, b;
 		for(Edge e : current.edges){
 			a = current.hashCode();
 			b = e.vertex.hashCode();
@@ -313,8 +285,8 @@ public class DFAnode extends Vertex{
 				temp.add(b);
 				stack.add(temp);
 				for(Edge e1 : current.edges){
-					printNFA(stack,e1.vertex,dictionary,lexicon);
-				}
+                    printBubble(stack, e1.vertex, dictionary, lexicon);
+                }
 			}
 		}
 	}
@@ -458,12 +430,12 @@ public class DFAnode extends Vertex{
 	}
 
 	public void eclosure() {
-		for (int v = 0; v < this.nfanodes.size(); v++) {
-			for (int e = 0; e < this.nfanodes.get(v).edges.size(); e++) {
-				if ((this.nfanodes.get(v).edges.get(e).label == "") && !this.nfanodes.contains(this.nfanodes.get(v).edges.get(e).vertex)) {
-					this.nfanodes.add(this.nfanodes.get(v).edges.get(e).vertex);
-					if (this.nfanodes.get(v).edges.get(e).vertex.accept) this.accept = true;
-					this.eclosure();
+        for (int v = 0; v < this.Bubblenodes.size(); v++) {
+            for (int e = 0; e < this.Bubblenodes.get(v).edges.size(); e++) {
+                if ((this.Bubblenodes.get(v).edges.get(e).label == "") && !this.Bubblenodes.contains(this.Bubblenodes.get(v).edges.get(e).vertex)) {
+                    this.Bubblenodes.add(this.Bubblenodes.get(v).edges.get(e).vertex);
+                    if (this.Bubblenodes.get(v).edges.get(e).vertex.accept) this.accept = true;
+                    this.eclosure();
 				}
 			}
 		}
