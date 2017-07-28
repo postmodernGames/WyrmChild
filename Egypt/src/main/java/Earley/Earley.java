@@ -1,11 +1,12 @@
 package Earley;
 
-import java.util.*;
-
 import Node.Node;
 import SymbolTable.SymbolTable;
 import symbol.Symbol;
 import symbol.Symbol.SymbolType;
+
+import java.util.ArrayList;
+import java.util.ListIterator;
 
 //The output of paring should be a queue that represents a parse tree
 //Internally, Earley first builds StateSet
@@ -188,8 +189,6 @@ public class Earley {
             inputPosition = z;
         }
 
-        ;
-
         public State(int x, int y, int z, String s) {
             ruleIndex = x;
             rulePosition = y;
@@ -197,14 +196,19 @@ public class Earley {
             token = s;
         }
 
-        ;
-
         public int nextSymbol(ArrayList<ArrayList<Symbol>> Grammar) {
             if (Grammar.get(ruleIndex).size() > rulePosition + 1) {
                 if (Grammar.get(ruleIndex).get(rulePosition + 1).symbolType == SymbolType.nonTerminal)
                     return Grammar.get(ruleIndex).get(rulePosition + 1).symbolIndex;
             }
             return -1;
+        }
+
+        public boolean matchSymbol(ArrayList<ArrayList<Symbol>> Grammar, Symbol y) {
+            int ns = nextSymbol(Grammar);
+            int ysi = y.symbolIndex;
+            if (ns != -1 && ns == ysi) return true;
+            else return false;
         }
 
         public boolean isComplete() {

@@ -12,9 +12,9 @@ import java.util.LinkedList;
  * Created by grahamr9 on 7/25/2017.
  */
 public class LayerQueue {
-    ArrayList<ArrayList<String>> layers;
+    public ArrayList<ArrayList<String>> layers;
 
-    LayerQueue(LinkedList<String> tokenQueue) {
+    public LayerQueue(LinkedList<String> tokenQueue) {
         layers = new ArrayList<>();
         ArrayList<String> layer = new ArrayList<>();
         for (String token : tokenQueue) {

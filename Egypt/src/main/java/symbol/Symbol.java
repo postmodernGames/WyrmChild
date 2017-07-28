@@ -1,8 +1,8 @@
 package symbol;
 
-import java.util.ArrayList;
-
 import DFA.DFAnode;
+
+import java.util.ArrayList;
 
 
 //Two fields:
@@ -27,7 +27,11 @@ public class Symbol {
         token = "" + c;
     }
 
-    ;
+    public Symbol(String c) {
+        symbolType = SymbolType.nonTerminal;
+        token = c;
+    }
+
 
     Symbol(ArrayList<DFAnode> lexicon2, ArrayList<Character> lexicon, char c, String s) {
         symbolIndex = lexicon2.size();

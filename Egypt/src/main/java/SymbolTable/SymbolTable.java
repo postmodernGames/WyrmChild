@@ -1,14 +1,13 @@
 package SymbolTable;
 
-import java.util.ArrayList;
-
 import symbol.Symbol;
 import symbol.Symbol.SymbolType;
 
+import java.util.ArrayList;
+
 /*
  * Symbol table should be given a file which it reads to build the symbols
- * 
- * 
+ *
  */
 
 
